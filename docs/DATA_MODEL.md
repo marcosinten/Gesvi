@@ -61,6 +61,8 @@ Se crea con una o más asignaciones, pero puede quedar sin asientos activos desp
 
 Total, recibido, saldo pendiente, saldo a favor y estado económico son valores derivados del agregado.
 
+`Reservar` lo crea sin `PaymentRecord` inicial. `Vender` exige crear un `PaymentRecord` inicial con monto mayor a `0`; ambas operaciones usan el mismo agregado y sus relaciones.
+
 ### BookingSeat
 
 Representa la asignación de un asiento a una reserva. Contiene conceptualmente:
@@ -133,13 +135,13 @@ Cardinalidades e invariantes:
 ## Valores Derivados
 
 ```text
-bookingTotal   = sum(precio vigente de cada BookingSeat activo)
-totalRecibido  = sum(PaymentRecord.amount)
-saldoPendiente = max(bookingTotal - totalRecibido, 0)
-saldoFavor     = max(totalRecibido - bookingTotal, 0)
+bookingTotal   = sum(tarifas actuales de los BookingSeat activos)
+totalReceived  = sum(PaymentRecord.amount)
+pendingBalance = max(bookingTotal - totalReceived, 0)
+creditBalance  = max(totalReceived - bookingTotal, 0)
 ```
 
-El estado económico también considera si existe algún `PaymentRecord`: sin registros es `RESERVED`; con registros es `PARTIAL` mientras exista saldo pendiente y `PAID` cuando deje de existir, incluso si hay saldo a favor. Se deriva para el `Booking` y se proyecta igual sobre todos sus asientos activos.
+El estado económico también considera si existe algún `PaymentRecord`: sin registros es `RESERVED`; con registros es `PARTIAL` mientras `pendingBalance` sea mayor que `0` y `PAID` cuando sea `0`, incluso si existe `creditBalance`. Se deriva para el `Booking` y se proyecta igual sobre todos sus asientos activos.
 
 La validez de importes cero o negativos y la forma de registrar una futura devolución requieren confirmación humana. Gesvi conserva el saldo a favor, pero no procesa la devolución.
 
@@ -152,6 +154,7 @@ Room relations -> Mappers -> Repository -> Domain state
                                       |
                                       +-- Seat Map
                                       +-- Passenger List
+                                      +-- Collections (Cobros)
                                       +-- Passenger PDF
                                       `-- Accounts
 ```

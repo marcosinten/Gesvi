@@ -14,7 +14,15 @@ Un Tour contiene:
 
 No existe ruta, origen ni destino.
 
-Gesvi tendrá un módulo de Tours registrados desde el que posteriormente podrán editarse fecha, hora, cantidad de asientos y flete.
+Desde el módulo de Tours registrados podrán editarse:
+
+- fecha;
+- hora;
+- cantidad de asientos;
+- valor del flete;
+- precio de `Ida y vuelta`;
+- precio de `Solo ida`, si está habilitado;
+- precio de `Solo venida`, si está habilitado.
 
 - La cantidad de asientos puede aumentarse.
 - Solo puede reducirse si todos los asientos que desaparecerían están `EMPTY`.
@@ -66,7 +74,7 @@ Cuando cambia el precio de un tipo de pasaje, todos los `BookingSeat` de ese Tou
 
 Los `PaymentRecord` ya registrados no cambian. Se aplica el recálculo económico definido en este documento, incluidas las cuentas del Tour.
 
-## Reserva O Venta
+## Reserva Y Venta
 
 El agregado de dominio `Booking` representa una reserva o venta. Se crea con `1..N` asientos bajo un responsable común, pero puede quedar sin asientos activos después de liberarlos.
 
@@ -81,7 +89,29 @@ Asientos:
 04
 ```
 
-El responsable puede representar a varias personas. No se debe exigir el nombre individual de cada pasajero. La distinción de ciclo de vida entre los términos "reserva" y "venta" todavía no está definida; no se deben inventar estados adicionales por esa diferencia.
+El responsable puede representar a varias personas. No se debe exigir el nombre individual de cada pasajero.
+
+### Reservar
+
+`Reservar` crea el `Booking` sin dinero registrado inicialmente:
+
+```text
+totalReceived = 0
+estado = RESERVED 🔴
+```
+
+Posteriormente puede recibir abonos desde el módulo de cobros.
+
+### Vender
+
+`Vender` crea el `Booking` y registra un `PaymentRecord` inicial con monto mayor a `0`.
+
+```text
+0 < totalReceived < bookingTotal  -> PARTIAL 🟡
+totalReceived >= bookingTotal     -> PAID 🟢
+```
+
+Si el cliente no entrega ningún valor, debe utilizarse `Reservar`, no `Vender`. Gesvi solo registra el monto declarado como recibido; no procesa el pago.
 
 ## Abonos
 
@@ -124,10 +154,10 @@ El historial de registros debe conservarse. Gesvi registra el importe que el enc
 Valores derivados:
 
 ```text
-totalBooking   = suma del precio vigente de cada BookingSeat activo
-totalRecibido  = suma de PaymentRecord.amount del Booking
-saldoPendiente = max(totalBooking - totalRecibido, 0)
-saldoFavor     = max(totalRecibido - totalBooking, 0)
+bookingTotal   = suma de las tarifas actuales de los BookingSeat activos
+totalReceived  = suma de PaymentRecord.amount del Booking
+pendingBalance = max(bookingTotal - totalReceived, 0)
+creditBalance  = max(totalReceived - bookingTotal, 0)
 ```
 
 Ejemplo después de liberar un asiento:
@@ -151,7 +181,7 @@ Se recalcula automáticamente cuando cambia:
 - la cantidad de asientos activos del `Booking`;
 - o se libera un asiento.
 
-El recálculo actualiza total del `Booking`, total recibido, saldo pendiente, saldo a favor, estado económico y cuentas relacionadas. Nunca modifica automáticamente los `PaymentRecord` registrados.
+El recálculo actualiza `bookingTotal`, `totalReceived`, `pendingBalance`, `creditBalance`, estado económico y cuentas relacionadas. Nunca modifica automáticamente los `PaymentRecord` registrados.
 
 ## Estados De Asiento
 
@@ -177,8 +207,8 @@ Derivación:
 
 - `EMPTY`: el asiento no pertenece a ninguna reserva.
 - `RESERVED`: pertenece a una reserva y no existe ningún `PaymentRecord` registrado.
-- `PARTIAL`: existe al menos un `PaymentRecord` y el total abonado es menor que el total de la reserva.
-- `PAID`: existe al menos un `PaymentRecord` y no queda saldo pendiente, incluido el caso con saldo a favor.
+- `PARTIAL`: existe al menos un `PaymentRecord` y `pendingBalance` es mayor que `0`.
+- `PAID`: existe al menos un `PaymentRecord` y `pendingBalance` es `0`, incluido el caso con `creditBalance`.
 
 Estas reglas presuponen importes y precios válidos. Aún debe confirmarse si se aceptan valores cero o negativos; no se debe implementar su tratamiento por suposición.
 
@@ -235,6 +265,7 @@ Repository / Domain state
           |
           +-- Seat Map
           +-- Passenger List
+          +-- Collections (Cobros)
           +-- Passenger PDF
           +-- Accounts
 ```
@@ -245,7 +276,6 @@ No se permiten tablas, repositorios o estados de negocio independientes como `Se
 
 Requieren confirmación humana antes de implementarse:
 
-- ciclo de vida formal y diferencia, si existe, entre reserva y venta;
 - moneda, precisión, redondeo y formato monetario;
 - validez de precios y abonos con importe cero o negativo;
 - forma de registrar una futura devolución de saldo a favor;

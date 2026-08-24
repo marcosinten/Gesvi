@@ -14,9 +14,10 @@ Gesvi permitirá:
 - registrar su fecha y hora;
 - definir el número de asientos;
 - registrar el valor del flete del carro;
-- editar posteriormente esos datos desde el módulo de Tours;
+- editar desde Tours la fecha, hora, cantidad de asientos, flete y precios habilitados;
 - configurar los tipos de pasaje permitidos y sus precios;
-- administrar reservas o ventas de uno o varios asientos;
+- reservar uno o varios asientos sin dinero inicial;
+- vender uno o varios asientos registrando un monto inicial mayor a `0`;
 - registrar el responsable común de una reserva;
 - liberar cualquier asiento de una reserva sin eliminar su historial;
 - registrar uno o varios abonos;
