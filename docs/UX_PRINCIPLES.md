@@ -31,7 +31,17 @@ Gesvi debe digitalizar ese proceso, no reemplazarlo por un modelo abstracto o ra
 
 ## Áreas Principales
 
-El usuario debe poder trabajar principalmente con:
+La navegación principal mantiene siempre este orden:
+
+```text
+Informes | Inicio | Historial
+```
+
+- `Informes` concentra el acceso al listado para imprimir o guardar en PDF y a futuros reportes, todos derivados del mismo estado de dominio.
+- `Inicio` es el destino inicial y muestra el resumen y acceso a los Tours registrados.
+- `Historial` queda como destino visible, pero su comportamiento funcional no se define ni implementa todavía.
+
+Dentro de un Tour, el usuario debe poder trabajar principalmente con:
 
 ```text
 Asientos
@@ -42,10 +52,12 @@ Cuentas
 
 Estas áreas son distintas representaciones o tareas sobre la misma información del viaje. Cambiar una reserva o registrar un abono debe reflejarse inmediatamente en las demás, sin sincronizaciones manuales.
 
+En Detalle del Tour, la cabecera completa forma parte del desplazamiento: se oculta al avanzar por el mapa y reaparece únicamente al regresar al inicio. Este comportamiento no modifica las cabeceras de las demás pantallas.
+
 ## Formularios
 
 - Solicitar solo datos definidos por las reglas del negocio.
-- No solicitar ruta ni nombres individuales cuando no son necesarios.
+- No solicitar origen, ruta detallada ni nombres individuales cuando no son necesarios.
 - Mostrar valores predeterminados seguros, como `Ida y vuelta`, sin ocultar las alternativas habilitadas.
 - Conservar lo escrito ante errores validables.
 - Mostrar errores junto al campo o acción que los produjo y explicar cómo corregirlos.

@@ -24,6 +24,17 @@ class TripRepositoryImpl @Inject constructor(
             entities.map { it.toDomain() }
         }
 
+    override fun observeTrip(tripId: Long): Flow<Trip?> =
+        tripDao.observeTrip(tripId).map { entity -> entity?.toDomain() }
+
     override suspend fun createTrip(trip: Trip): Long =
         tripDao.insertTrip(trip.toEntity())
+
+    override suspend fun deleteTrip(tripId: Long) {
+        tripDao.deleteTripWithRelatedData(tripId)
+    }
+
+    override suspend fun updateTrip(trip: Trip) {
+        check(tripDao.updateTrip(trip.toEntity()) == 1) { "Tour no encontrado" }
+    }
 }

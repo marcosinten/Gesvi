@@ -20,6 +20,17 @@ N
 
 Los números de asiento deben ser prominentes y conservar un orden estable. Los asientos vacíos también deben poder identificarse como tales.
 
+## Tramo Activo
+
+Un mismo número de asiento puede tener ocupantes distintos en IDA y en
+VENIDA. El listado de pasajeros muestra, para cada número de asiento, la
+ocupación del tramo activo del Tour (ver docs/BUSINESS_RULES.md y
+docs/DATA_MODEL.md): antes de la hora de venida se ve quién ocupa la IDA;
+desde la hora de venida en adelante se ve quién ocupa la VENIDA, y si no hay
+ocupación de VENIDA para ese asiento, se muestra vacío aunque haya tenido
+pasajero en IDA. El listado no calcula su propio tramo activo: reutiliza el
+mismo valor derivado que usan el mapa de asientos, el PDF y las cuentas.
+
 ## Agrupación Por Reserva
 
 Cuando varios asientos pertenecen a una misma reserva, la relación debe ser evidente:
@@ -38,14 +49,14 @@ Ejemplo de bloque:
 ```text
 Sra. López
 
-[01] Ida y vuelta $20
-[02] Ida y vuelta $20
-[03] Solo ida     $12
-[04] Solo ida     $12
+[01] Ida y vuelta $20.00
+[02] Ida y vuelta $20.00
+[03] Solo ida     $12.00
+[04] Solo ida     $12.00
 
-Total:     $64
-Abonado:   $30
-Pendiente: $34
+Total:     $64.00
+Abonado:   $30.00
+Pendiente: $34.00
 
 [Registrar abono]
 ```
@@ -59,6 +70,10 @@ El nombre mostrado es el responsable de la reserva. No se debe inventar ni exigi
 - El pendiente y el estado se derivan de esa misma reserva.
 - Todos los asientos agrupados comparten el estado económico.
 - El listado no distribuye el total abonado entre asientos.
+- El total, el abonado y el pendiente de una reserva incluyen todos sus
+  `BookingSeat`, sin importar si ocupan IDA, VENIDA o ambos: el tramo activo
+  decide qué se muestra como ocupación del número de asiento, no qué se
+  cuenta para el dinero de la reserva.
 
 ## Fuente Única De Verdad
 

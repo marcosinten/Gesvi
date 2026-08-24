@@ -1,17 +1,22 @@
 package com.gestionviajes.feature.passenger_list.presentation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.People
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.gestionviajes.R
+import com.gestionviajes.core.designsystem.component.AppPlaceholderScreen
 
 @Composable
 fun PassengerListScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
 ) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Lista de Pasajeros (Stub)")
-    }
+    AppPlaceholderScreen(
+        eyebrow = stringResource(R.string.app_name).uppercase(),
+        title = stringResource(R.string.passenger_list_title),
+        message = stringResource(R.string.passenger_list_placeholder),
+        icon = Icons.Rounded.People,
+        onNavigateBack = onNavigateBack,
+        navigateBackContentDescription = stringResource(R.string.navigate_back),
+    )
 }

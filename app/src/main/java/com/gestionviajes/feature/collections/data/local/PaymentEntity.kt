@@ -22,6 +22,6 @@ data class PaymentEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val bookingId: Long,
-    val amount: Double,
+    val amountCents: Long,
     val dateMillis: Long
 )

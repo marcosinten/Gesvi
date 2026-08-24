@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.gestionviajes.core.common.Constants
 import com.gestionviajes.core.database.AppDatabase
+import com.gestionviajes.core.database.AppDatabaseMigrations
 import com.gestionviajes.feature.bookings.data.local.BookingDao
 import com.gestionviajes.feature.collections.data.local.PaymentDao
 import com.gestionviajes.feature.trips.data.local.TripDao
@@ -32,6 +33,13 @@ object DatabaseModule {
             AppDatabase::class.java,
             Constants.DATABASE_NAME,
         )
+        .addMigrations(
+            AppDatabaseMigrations.MIGRATION_2_3,
+            AppDatabaseMigrations.MIGRATION_3_4,
+            AppDatabaseMigrations.MIGRATION_4_5,
+            AppDatabaseMigrations.MIGRATION_5_6,
+        )
+        .fallbackToDestructiveMigration()
         .build()
 
     @Provides

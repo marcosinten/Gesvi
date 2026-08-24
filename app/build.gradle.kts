@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace  = "com.gestionviajes"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.gestionviajes"
@@ -58,11 +58,14 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
+    }
+
 }
 
 ksp {
-    // Keep this relative: absolute Windows paths with spaces break KSP arguments.
-    arg("room.schemaLocation", "app/schemas")
+    arg("room.schemaLocation", layout.projectDirectory.dir("schemas").asFile.path)
 }
 
 dependencies {

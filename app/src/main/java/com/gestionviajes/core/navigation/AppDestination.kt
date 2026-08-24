@@ -13,6 +13,30 @@ sealed interface AppDestination {
     data object TripList : AppDestination
 
     @Serializable
+    data object Reports : AppDestination
+
+    @Serializable
+    data object TripReport : AppDestination
+
+    @Serializable
+    data object TourReport : AppDestination
+
+    @Serializable
+    data object Refunds : AppDestination
+
+    @Serializable
+    data object History : AppDestination
+
+    @Serializable
+    data object CreateTour : AppDestination
+
+    @Serializable
+    data class EditTour(val tourId: Long) : AppDestination
+
+    @Serializable
+    data class TourDetail(val tourId: Long) : AppDestination
+
+    @Serializable
     data class SeatMap(val tripId: Long) : AppDestination
 
     @Serializable

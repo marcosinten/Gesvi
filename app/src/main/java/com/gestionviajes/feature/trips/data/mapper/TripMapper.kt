@@ -10,16 +10,34 @@ import com.gestionviajes.feature.trips.domain.model.Trip
  */
 fun TripEntity.toDomain() = Trip(
     id = id,
-    origin = origin,
     destination = destination,
+    supervisor = supervisor,
     dateMillis = dateMillis,
-    defaultFare = defaultFare
+    seatCount = seatCount,
+    freightCents = freightCents,
+    roundTripFareCents = roundTripFareCents,
+    outboundFareCents = outboundFareCents,
+    returnFareCents = returnFareCents,
+    isRoundTripFareEnabled = isRoundTripFareEnabled,
+    isOutboundFareEnabled = isOutboundFareEnabled,
+    isReturnFareEnabled = isReturnFareEnabled,
+    horaSalidaMillis = horaSalidaMillis,
+    horaVenidaMillis = horaVenidaMillis,
 )
 
 fun Trip.toEntity() = TripEntity(
     id = id,
-    origin = origin,
     destination = destination,
+    supervisor = supervisor,
     dateMillis = dateMillis,
-    defaultFare = defaultFare
+    seatCount = seatCount,
+    freightCents = freightCents,
+    roundTripFareCents = roundTripFareCents,
+    outboundFareCents = outboundFareCents,
+    returnFareCents = returnFareCents,
+    isRoundTripFareEnabled = isRoundTripFareEnabled,
+    isOutboundFareEnabled = isOutboundFareEnabled,
+    isReturnFareEnabled = isReturnFareEnabled,
+    horaSalidaMillis = horaSalidaMillis,
+    horaVenidaMillis = horaVenidaMillis,
 )

@@ -23,7 +23,6 @@ data class BookingEntity(
     val id: Long = 0,
     val tripId: Long,
     val passengerName: String,
-    val totalFare: Double
 )
 
 /**
@@ -36,5 +35,6 @@ data class BookingEntity(
 )
 data class BookingSeatCrossRef(
     val bookingId: Long,
-    val seatNumber: String
+    val seatNumber: Int,
+    val fareType: String,
 )

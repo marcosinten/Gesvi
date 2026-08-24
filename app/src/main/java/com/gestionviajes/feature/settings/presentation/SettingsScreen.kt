@@ -1,17 +1,22 @@
 package com.gestionviajes.feature.settings.presentation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.gestionviajes.R
+import com.gestionviajes.core.designsystem.component.AppPlaceholderScreen
 
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
 ) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Configuración (Stub)")
-    }
+    AppPlaceholderScreen(
+        eyebrow = stringResource(R.string.app_name).uppercase(),
+        title = stringResource(R.string.settings_title),
+        message = stringResource(R.string.settings_placeholder),
+        icon = Icons.Rounded.Settings,
+        onNavigateBack = onNavigateBack,
+        navigateBackContentDescription = stringResource(R.string.navigate_back),
+    )
 }
