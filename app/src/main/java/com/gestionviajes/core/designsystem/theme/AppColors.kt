@@ -21,20 +21,16 @@ private val Orange40 = Color(0xFF8C4900)
 object SeatColorTokens {
     object Light {
         val empty    = Color(0xFFE8EDF2)   // gris muy claro
-        val reserved = Color(0xFFFFF3B2)   // amarillo suave
+        val reserved = Color(0xFFFFCDD2)   // rojo suave
         val partial  = Color(0xFFFFCC80)   // naranja suave
         val paid     = Color(0xFFA5D6A7)   // verde suave
-        val selected = Color(0xFF90CAF9)   // azul claro
-        val disabled = Color(0xFFCFD8DC)   // gris apagado
         val onSeat   = Color(0xFF1C1B1F)   // texto sobre celda
     }
     object Dark {
         val empty    = Color(0xFF2A3240)
-        val reserved = Color(0xFF5C4A00)
+        val reserved = Color(0xFF7F1D1D)
         val partial  = Color(0xFF7A4800)
         val paid     = Color(0xFF1B5E20)
-        val selected = Color(0xFF0D47A1)
-        val disabled = Color(0xFF37474F)
         val onSeat   = Color(0xFFE6E1E5)
     }
 }
@@ -54,8 +50,6 @@ data class AppExtendedColors(
     val seatReserved: Color,
     val seatPartial: Color,
     val seatPaid: Color,
-    val seatSelected: Color,
-    val seatDisabled: Color,
     val onSeat: Color,
     // Economía
     val incomePositive: Color,
@@ -67,8 +61,6 @@ val LightExtendedColors = AppExtendedColors(
     seatReserved = SeatColorTokens.Light.reserved,
     seatPartial  = SeatColorTokens.Light.partial,
     seatPaid     = SeatColorTokens.Light.paid,
-    seatSelected = SeatColorTokens.Light.selected,
-    seatDisabled = SeatColorTokens.Light.disabled,
     onSeat       = SeatColorTokens.Light.onSeat,
     incomePositive = Color(0xFF2E7D32),
     balancePending = Color(0xFFE65100),
@@ -79,8 +71,6 @@ val DarkExtendedColors = AppExtendedColors(
     seatReserved = SeatColorTokens.Dark.reserved,
     seatPartial  = SeatColorTokens.Dark.partial,
     seatPaid     = SeatColorTokens.Dark.paid,
-    seatSelected = SeatColorTokens.Dark.selected,
-    seatDisabled = SeatColorTokens.Dark.disabled,
     onSeat       = SeatColorTokens.Dark.onSeat,
     incomePositive = Color(0xFF81C784),
     balancePending = Color(0xFFFFB74D),

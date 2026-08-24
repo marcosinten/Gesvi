@@ -58,10 +58,11 @@ android {
         }
     }
 
-    // Room schema export directory (for migration tracking)
-    room {
-        schemaDirectory("$projectDir/schemas")
-    }
+}
+
+ksp {
+    // Keep this relative: absolute Windows paths with spaces break KSP arguments.
+    arg("room.schemaLocation", "app/schemas")
 }
 
 dependencies {

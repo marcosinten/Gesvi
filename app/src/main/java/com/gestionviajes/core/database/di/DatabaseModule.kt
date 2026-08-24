@@ -32,9 +32,6 @@ object DatabaseModule {
             AppDatabase::class.java,
             Constants.DATABASE_NAME,
         )
-        // TODO: Antes de producción, reemplazar con migraciones explícitas.
-        // Ver docs/DATA_MODEL.md sección "Migraciones".
-        .fallbackToDestructiveMigration()
         .build()
 
     @Provides

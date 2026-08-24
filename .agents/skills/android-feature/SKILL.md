@@ -1,16 +1,48 @@
 ---
 name: android-feature
-description: Arquitectura y flujo de datos para nuevas funcionalidades.
+description: Usar al crear o modificar features Android, ViewModels, casos de uso, repositorios, Room, Hilt o flujos de datos de Gesvi.
 ---
 
 # Android Feature Skill
 
-Todas las features de esta app siguen este flujo unidireccional:
+Antes de modificar arquitectura o flujo de datos, lee `docs/ARCHITECTURE.md`. Si la feature toca negocio o UI, carga también `business-logic` y/o `mobile-ux` con sus documentos obligatorios.
 
-`Compose Screen` -> `Event` -> `ViewModel` -> `UseCase` -> `Repository Interface` -> `Repository Impl` -> `Room DAO`
+Mantén el flujo:
 
-**PROHIBICIONES ESTRICTAS:**
-- NO accedas a DAOs ni Entities desde el ViewModel o la UI.
-- NO uses `AndroidViewModel` (usa `ViewModel` estándar inyectado por Hilt).
-- NO pases `NavController` a los Composables profundos (usa lambdas `onNavigate`).
-- NO guardes estado localmente en el mapa de asientos. Debe ser reactivo (`Flow`) derivado de la base de datos.
+```text
+Compose
+  -> Event
+  -> ViewModel
+  -> Use Case
+  -> Repository interface
+  -> Repository implementation
+  -> Data source / Room DAO
+```
+
+Prohibiciones estrictas:
+
+```text
+Composable -> DAO
+ViewModel  -> DAO
+Composable -> Room Entity
+ViewModel  -> Room Entity
+Domain     -> Room
+Domain     -> Design System
+```
+
+Además:
+
+- Usa `ViewModel` estándar inyectado por Hilt, no `AndroidViewModel`.
+- No pases `NavController` a Composables profundos; expón lambdas de navegación.
+- Mantén Room entities y mappers dentro de Data.
+- Mantén reglas e interfaces de repositorio dentro de Domain.
+- Expón `StateFlow`/UI State inmutable desde el ViewModel.
+- Mantén operación offline; no añadas una dependencia de red para completar el flujo.
+- Conserva el único módulo Gradle `:app` salvo decisión explícita.
+
+Fuente única de verdad:
+
+- `BookingRepository` y el estado de dominio son autoritativos para reservas, ocupación y abonos.
+- Seat Map, Passenger List, Printable Manifest y Accounts son proyecciones de ese mismo estado.
+- No crees tablas, repositorios ni caches de negocio independientes por pantalla.
+- Solo el estado transitorio de UI, como selección o texto en edición, puede mantenerse localmente.

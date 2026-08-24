@@ -26,8 +26,6 @@ fun SeatCell(
         SeatStatus.Reserved -> AppTheme.extendedColors.seatReserved
         SeatStatus.Partial -> AppTheme.extendedColors.seatPartial
         SeatStatus.Paid -> AppTheme.extendedColors.seatPaid
-        SeatStatus.Selected -> AppTheme.extendedColors.seatSelected
-        SeatStatus.Disabled -> AppTheme.extendedColors.seatDisabled
     }
 
     Box(
