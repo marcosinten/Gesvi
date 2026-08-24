@@ -37,9 +37,9 @@ error
 
 Significado de asientos:
 
-- `seatEmpty`: blanco o gris neutro.
+- `seatEmpty`: blanco.
 - `seatReserved`: rojo.
-- `seatPartial`: naranja.
+- `seatPartial`: amarillo.
 - `seatPaid`: verde.
 
 El color comunica semántica, pero nunca debe ser el único indicador de estado.
@@ -68,7 +68,7 @@ FareSelector
 PassengerGroup
 PaymentButton
 MoneySummary
-TripSummary
+TourSummary
 ```
 
 Responsabilidades:
@@ -82,7 +82,7 @@ Responsabilidades:
 - `PassengerGroup`: bloque que relaciona un responsable con varios asientos.
 - `PaymentButton`: acción explícita para registrar un abono, sin implicar procesamiento bancario.
 - `MoneySummary`: total, abonado y pendiente del `Booking`.
-- `TripSummary`: fecha, hora y resumen operativo del viaje.
+- `TourSummary`: fecha, hora y resumen operativo del Tour.
 
 No es necesario crear un componente por cada elemento de una pantalla. Se extrae cuando representa una pieza semántica compartida o evita duplicar estilo y comportamiento.
 

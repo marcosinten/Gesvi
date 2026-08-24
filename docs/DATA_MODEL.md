@@ -12,9 +12,9 @@ Una Room entity no debe llegar a Presentation. Un modelo de dominio no debe depe
 
 ## Entidades Conceptuales
 
-### Trip
+### Tour
 
-Representa un viaje y contiene:
+Representa un Tour y contiene:
 
 - identificador;
 - fecha;
@@ -23,11 +23,13 @@ Representa un viaje y contiene:
 - valor del flete del carro;
 - configuraciones de tipos de pasaje.
 
-No contiene ruta, origen ni destino como requisito de negocio.
+No contiene ruta, origen ni destino. El scaffolding actual todavía usa el nombre técnico `Trip`; ese modelo es provisional y representa el mismo concepto de negocio.
+
+La cantidad de asientos puede aumentar. Para reducirla, los números que queden fuera de la nueva cantidad deben estar `EMPTY`, es decir, sin ningún `BookingSeat` asociado.
 
 ### FareType
 
-Representa uno de los tres tipos permitidos dentro de un viaje:
+Representa uno de los tres tipos permitidos dentro de un Tour:
 
 ```text
 Ida y vuelta
@@ -35,13 +37,13 @@ Solo ida
 Solo venida
 ```
 
-Contiene el tipo canónico, si está habilitado para el viaje y su precio. `Ida y vuelta` siempre existe y es el predeterminado. No se admiten tipos personalizados.
+Contiene el tipo canónico, si está habilitado para el Tour y su precio vigente. `Ida y vuelta` siempre existe y es el predeterminado. No se admiten tipos personalizados ni precios hardcodeados.
 
 La forma exacta de persistir la configuración puede ser una relación o entity propia, pero no debe convertir etiquetas libres de UI en tipos de negocio.
 
 ### Seat
 
-Representa conceptualmente una posición numerada dentro del viaje. El conjunto de asientos se obtiene de `Trip.seatCount` y su ocupación se deriva de las asignaciones de reservas.
+Representa conceptualmente una posición numerada dentro del Tour. El conjunto de asientos se obtiene de `Tour.seatCount` y su ocupación se deriva de las asignaciones de reservas.
 
 Por esta razón, `Seat` no necesita necesariamente una tabla con estado mutable. En particular, `EMPTY`, `RESERVED`, `PARTIAL` y `PAID` no deben almacenarse como una fuente independiente: se calculan desde la existencia de una asignación y el estado económico de su `Booking`.
 
@@ -50,7 +52,7 @@ Por esta razón, `Seat` no necesita necesariamente una tabla con estado mutable.
 Es el agregado que representa una reserva o venta. Contiene:
 
 - identificador;
-- viaje al que pertenece;
+- Tour al que pertenece;
 - nombre del responsable;
 - una o más asignaciones `BookingSeat`;
 - cero o más `PaymentRecord`.
@@ -63,12 +65,13 @@ Representa la asignación de un asiento a una reserva. Contiene conceptualmente:
 
 - referencia al `Booking`;
 - número de asiento;
-- `FareType` elegido;
-- precio individual aplicado a esa asignación.
+- `FareType` elegido.
 
-El modelo y la persistencia deben garantizar que un mismo número de asiento no esté asignado a dos reservas dentro del mismo viaje. Crear una reserva y sus asignaciones debe ser una operación atómica.
+El modelo y la persistencia deben garantizar que un mismo número de asiento no esté asignado a dos reservas dentro del mismo Tour. Crear una reserva y sus asignaciones debe ser una operación atómica.
 
-El precio aplicado debe estar disponible en la asignación para conservar la tarifa al cambiar de asiento. El efecto de editar posteriormente el precio configurado del viaje está pendiente de confirmación en `BUSINESS_RULES.md`.
+El precio de un `BookingSeat` se deriva del precio vigente de su `FareType` en el Tour. No es una tarifa histórica fijada por la reserva. Cambiar el precio actualiza automáticamente los totales, saldos, estados económicos y cuentas relacionados, sin modificar los `PaymentRecord`.
+
+Puede eliminarse un `BookingSeat` y liberar su asiento sin modificar los abonos, siempre que el `Booking` conserve al menos otro asiento. No se permite dejar un `Booking` sin asientos.
 
 ### PaymentRecord
 
@@ -94,7 +97,7 @@ PaymentRecord -> Seat
 ## Relaciones
 
 ```text
-Trip
+Tour
  |-- FareTypes
  |-- Seats (derivados de seatCount)
  `-- Bookings
@@ -107,7 +110,7 @@ Booking
 BookingSeat
  |-- Seat
  |-- FareType
- `-- Price
+ `-- Current FareType price (derivado)
 
 PaymentRecord
  `-- Booking
@@ -115,18 +118,19 @@ PaymentRecord
 
 Cardinalidades e invariantes:
 
-- Un `Trip` tiene la configuración de sus asientos y tarifas.
-- Un `Booking` pertenece a un solo `Trip`.
+- Un `Tour` tiene la configuración de sus asientos y tarifas.
+- Un `Booking` pertenece a un solo `Tour`.
 - Un `Booking` tiene de `1..N` `BookingSeat`.
 - Un `BookingSeat` pertenece a un solo `Booking`.
-- Un asiento puede pertenecer como máximo a un `Booking` dentro del mismo viaje.
+- Un asiento puede pertenecer como máximo a un `Booking` dentro del mismo Tour.
+- El último `BookingSeat` de un `Booking` no puede eliminarse.
 - Un `PaymentRecord` pertenece a un solo `Booking`.
 - Un `Booking` puede tener de `0..N` `PaymentRecord`.
 
 ## Valores Derivados
 
 ```text
-bookingTotal = sum(BookingSeat.price)
+bookingTotal = sum(precio vigente de BookingSeat.fareType en el Tour)
 paidTotal    = sum(PaymentRecord.amount)
 balance      = bookingTotal - paidTotal
 pending      = balance cuando balance es positivo; de lo contrario no hay pendiente
@@ -138,18 +142,18 @@ La validez de importes cero o negativos y el tratamiento del excedente de un sob
 
 ## Fuente Única De Verdad
 
-`BookingRepository` debe exponer una proyección reactiva capaz de reconstruir reservas, asignaciones y abonos. Los casos de uso combinan esa información con la configuración de `Trip` cuando sea necesario.
+`BookingRepository` debe exponer una proyección reactiva capaz de reconstruir reservas, asignaciones y abonos. Los casos de uso combinan esa información con la configuración y las tarifas vigentes del Tour.
 
 ```text
 Room relations -> Mappers -> Repository -> Domain state
                                       |
                                       +-- Seat Map
                                       +-- Passenger List
-                                      +-- Printable Manifest
+                                      +-- Passenger PDF
                                       `-- Accounts
 ```
 
-No crear entities o tablas autoritativas para `SeatMap`, `PassengerList`, `PrintableManifest` o `Accounts`. Sus modelos de presentación son proyecciones descartables del mismo estado de dominio.
+No crear entities o tablas autoritativas para `SeatMap`, `PassengerList`, PDF o `Accounts`. Sus modelos de presentación son proyecciones descartables del mismo estado de dominio.
 
 ## Room Y Mappers
 
@@ -165,8 +169,8 @@ No crear entities o tablas autoritativas para `SeatMap`, `PassengerList`, `Print
 
 El esquema actual es provisional y no implementa todavía este modelo completo:
 
-- `Trip` aún conserva origen, destino y una tarifa predeterminada, pero carece de hora, cantidad de asientos, flete y tarifas por tipo.
-- `BookingSeatCrossRef` aún carece de tipo de pasaje, precio y protección completa contra doble asignación por viaje.
+- `Trip` aún conserva origen, destino y una tarifa predeterminada, pero el concepto objetivo es `Tour`, sin ruta y con hora, cantidad de asientos, flete y tarifas por tipo.
+- `BookingSeatCrossRef` aún carece de tipo de pasaje y protección completa contra doble asignación por Tour.
 - `BookingRepository` no tiene implementación ni reconstruye asignaciones y abonos.
 - El dominio de `Booking` usa un estado visual por asiento en lugar de derivarlo del agregado.
 - Los importes actuales usan `Double`; moneda, precisión y redondeo siguen pendientes.

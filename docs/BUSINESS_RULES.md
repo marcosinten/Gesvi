@@ -2,9 +2,9 @@
 
 Este documento es la fuente principal de verdad para el comportamiento de Gesvi. No se deben completar vacíos con suposiciones. Los casos no definidos se registran como decisiones pendientes y requieren confirmación humana antes de implementarse.
 
-## Viaje
+## Tour
 
-Un viaje (`Trip`) contiene:
+Un Tour contiene:
 
 - fecha;
 - hora;
@@ -12,9 +12,14 @@ Un viaje (`Trip`) contiene:
 - valor del flete del carro;
 - tipos de pasaje disponibles y el precio de cada uno.
 
-No se requiere registrar ruta, origen ni destino.
+No existe ruta, origen ni destino.
 
-El flete pertenece al viaje. Se usa en los cálculos aprobados del módulo de cuentas y no se muestra dentro del mapa de asientos.
+Gesvi tendrá un módulo de Tours registrados desde el que posteriormente podrán editarse fecha, hora, cantidad de asientos y flete.
+
+- La cantidad de asientos puede aumentarse.
+- Solo puede reducirse si todos los asientos que desaparecerían están `EMPTY`.
+
+El flete pertenece al Tour. Se usa en los cálculos aprobados del módulo de cuentas y no se muestra en la pantalla operativa de asientos.
 
 ## Tipos De Pasaje
 
@@ -30,19 +35,19 @@ Reglas:
 
 - `Ida y vuelta` existe siempre.
 - `Ida y vuelta` es el tipo predeterminado.
-- `Solo ida` es opcional para cada viaje.
-- `Solo venida` es opcional para cada viaje.
+- `Solo ida` es opcional para cada Tour.
+- `Solo venida` es opcional para cada Tour.
 - No existen tipos personalizados.
-- Cada tipo habilitado tiene su propio precio dentro del viaje.
+- Cada Tour define el precio de sus tipos habilitados. Los precios nunca se hardcodean.
 
 ## Asientos
 
-Los asientos de un viaje se numeran según la cantidad configurada. Cada asiento tiene conceptualmente:
+Los asientos de un Tour se numeran según la cantidad configurada. Cada asiento tiene conceptualmente:
 
 - número;
 - estado;
 - tipo de pasaje cuando está ocupado;
-- precio individual correspondiente a esa asignación.
+- precio vigente del tipo de pasaje correspondiente.
 
 Una misma reserva puede mezclar tipos y precios:
 
@@ -53,7 +58,18 @@ Asiento 03 -> Solo ida     -> $12
 Asiento 04 -> Solo ida     -> $12
 ```
 
-El precio total de la reserva es la suma de los precios de sus asignaciones de asiento. El dinero no se reparte posteriormente entre esos asientos.
+El precio total de la reserva es la suma de los precios vigentes de los tipos elegidos en sus asientos. El dinero no se reparte posteriormente entre esos asientos.
+
+## Cambio De Precios
+
+Cuando cambia el precio de un tipo de pasaje, todos los `BookingSeat` de ese Tour que usan el tipo adoptan automáticamente el nuevo valor. El precio anterior no queda fijado en la reserva.
+
+Los `PaymentRecord` ya registrados no cambian. Se recalculan automáticamente:
+
+- total del `Booking`;
+- saldo pendiente;
+- estado económico;
+- cuentas del Tour.
 
 ## Reserva O Venta
 
@@ -113,7 +129,7 @@ El historial de registros debe conservarse. Gesvi registra el importe que el enc
 Valores derivados:
 
 ```text
-Total de la reserva = suma de BookingSeat.price
+Total de la reserva = suma del precio vigente de cada BookingSeat.fareType
 Total abonado       = suma de PaymentRecord.amount del Booking
 Saldo pendiente     = diferencia positiva entre total y total abonado
 ```
@@ -134,9 +150,9 @@ PAID
 Representación semántica:
 
 ```text
-Blanco/gris  EMPTY     Asiento vacío.
+Blanco       EMPTY     Asiento vacío.
 Rojo         RESERVED  Reserva sin ningún abono registrado.
-Naranja      PARTIAL   Existe al menos un abono y queda saldo pendiente.
+Amarillo     PARTIAL   Existe al menos un abono y queda saldo pendiente.
 Verde        PAID      No queda saldo pendiente.
 ```
 
@@ -149,11 +165,28 @@ Derivación:
 
 Estas reglas presuponen importes y precios válidos. Aún debe confirmarse si se aceptan valores cero o negativos; no se debe implementar su tratamiento por suposición.
 
-Cuando una reserva contiene varios asientos, todos muestran el mismo estado económico derivado del `Booking`. No se distribuye dinero automáticamente para asignar estados diferentes a cada asiento.
+El estado se calcula automáticamente. Cuando una reserva contiene varios asientos, todos muestran el mismo estado económico derivado del `Booking`. No se distribuye dinero automáticamente para asignar estados diferentes a cada asiento.
 
 La selección temporal de una celda u otras condiciones de interacción son estado de presentación, no estados económicos adicionales.
 
+## Eliminar Un Asiento De Un Booking
+
+Un `BookingSeat` puede eliminarse individualmente, incluso dentro de una reserva grupal, siempre que el `Booking` conserve al menos otro asiento. No se permite eliminar su último asiento.
+
+Al eliminarlo:
+
+- se elimina únicamente esa asignación;
+- el asiento vuelve a `EMPTY`;
+- los demás asientos permanecen en el `Booking`;
+- los `PaymentRecord` permanecen sin cambios;
+- el total se recalcula con los asientos restantes y sus tarifas vigentes;
+- el saldo y el estado económico se recalculan automáticamente.
+
+Los abonos existentes no se distribuyen ni se modifican artificialmente.
+
 ## Cancelación
+
+La cancelación se refiere a liberar el `Booking` completo y es distinta de eliminar un `BookingSeat` individual.
 
 Una reserva `RESERVED`, sin abonos, puede liberar sus asientos.
 
@@ -168,30 +201,30 @@ El cambio conserva:
 - la reserva;
 - el responsable;
 - el tipo de pasaje;
-- la tarifa de la asignación;
 - los abonos de la reserva;
 - el saldo derivado;
 - el estado económico derivado.
 
-El asiento anterior pasa a `EMPTY`.
+El asiento anterior pasa a `EMPTY`. El valor aplicable continúa siendo el precio vigente en el Tour para el tipo de pasaje conservado.
 
-## Cuentas Del Viaje
+## Cuentas Del Tour
 
-- El total abonado del viaje se obtiene de los `PaymentRecord` de sus reservas.
-- El saldo pendiente del viaje se obtiene sumando los saldos de sus reservas, sin redistribuir dinero entre asientos ni entre reservas.
-- El flete del carro se toma del `Trip` y solo participa en cálculos de cuentas aprobados.
+- El total abonado del Tour se obtiene de los `PaymentRecord` de sus reservas.
+- El saldo pendiente del Tour se obtiene sumando los saldos de sus reservas, sin redistribuir dinero entre asientos ni entre reservas.
+- Totales, saldos y estados usan siempre las tarifas vigentes del Tour.
+- El flete del carro se toma del Tour y solo participa en cálculos de cuentas aprobados.
 - No se debe inventar una fórmula de ganancia, utilidad o cierre distinta de las reglas confirmadas.
 
 ## Fuente Única De Verdad
 
-La ocupación, tarifas asignadas, abonos y estados económicos provienen del estado de `BookingRepository` y del dominio. La configuración y el flete provienen del viaje. Los casos de uso combinan esas fuentes para producir una misma proyección coherente.
+La ocupación, tipos asignados, abonos y estados económicos provienen del estado de `BookingRepository` y del dominio. Las tarifas vigentes, la configuración y el flete provienen del Tour. Los casos de uso combinan esas fuentes para producir una misma proyección coherente.
 
 ```text
 Repository / Domain state
           |
           +-- Seat Map
           +-- Passenger List
-          +-- Printable Manifest
+          +-- Passenger PDF
           +-- Accounts
 ```
 
@@ -207,5 +240,4 @@ Requieren confirmación humana antes de implementarse:
 - tratamiento de sobrepagos;
 - operación de devolución, corrección o reverso de abonos;
 - operación de cancelación cuando existe dinero;
-- efecto de cambiar el precio de un tipo sobre reservas ya creadas;
 - fórmulas adicionales de utilidad o cierre de cuentas.

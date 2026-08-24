@@ -1,37 +1,27 @@
 ---
 name: business-logic
-description: Usar ante cambios de Trip, Booking, Seat, FareType, PaymentRecord, saldos, estados económicos o cuentas.
+description: Usar ante cambios de Tours, tarifas, Booking, BookingSeat, abonos, saldos, cuentas o listado de pasajeros.
 ---
 
 # Business Logic Skill
 
-Activa esta skill ante cualquier cambio de:
-
-- `Trip`;
-- `Booking`;
-- `Seat` o `BookingSeat`;
-- `FareType`;
-- `PaymentRecord`;
-- abonos, saldos, estados económicos o cuentas.
-
 Antes de modificar comportamiento:
 
-1. Lee `docs/BUSINESS_RULES.md`.
-2. Lee `docs/DATA_MODEL.md`.
+1. Lee siempre `docs/BUSINESS_RULES.md` y `docs/DATA_MODEL.md`.
+2. Lee `docs/PRODUCT.md` al cambiar Tours o alcance.
+3. Lee `docs/PASSENGER_MANIFEST.md` al cambiar mapa, listado o PDF.
 
-Regla de oro: nunca inventes reglas de negocio. Si los documentos dejan un caso abierto, solicita confirmación humana.
+Nunca inventes reglas. No rompas estas invariantes:
 
-Comprobaciones obligatorias:
-
-- `PaymentRecord belongs to Booking`.
-- Un `PaymentRecord` nunca pertenece a `Seat` ni a `BookingSeat`.
-- Un `Booking` agrupa de `1..N` asientos y puede mezclar tipos de pasaje.
-- Los abonos y el saldo se calculan para el `Booking` completo.
-- Todos los asientos de una reserva comparten `RESERVED`, `PARTIAL` o `PAID`.
+- Un Tour no tiene ruta, origen ni destino. Sus precios nunca se hardcodean.
+- Reducir asientos solo es válido si todos los que desaparecerían están `EMPTY`.
+- `Ida y vuelta` siempre existe; `Solo ida` y `Solo venida` son opcionales y no hay tipos personalizados.
+- Cambiar una tarifa actualiza los totales, saldos, estados y cuentas relacionados, pero no los `PaymentRecord`.
+- `PaymentRecord belongs to Booking`, nunca a `Seat` ni a `BookingSeat`.
+- Un `Booking` conserva `1..N` asientos; no se puede eliminar su último `BookingSeat`.
+- Quitar un asiento conserva los abonos y recalcula el Booking sin distribuirlos.
 - El cambio de asiento solo tiene como destino un asiento `EMPTY`.
-- La cancelación simple solo aplica a una reserva sin ningún `PaymentRecord`.
-- Solo existen `Ida y vuelta`, `Solo ida` y `Solo venida`.
+- Los estados se calculan automáticamente para el Booking completo.
+- El flete pertenece al Tour, se usa en cuentas y no aparece en la pantalla operativa de asientos.
 - Gesvi registra dinero declarado; no procesa pagos ni transacciones bancarias.
-- Mapa, listado, impresión y cuentas derivan del mismo estado de repositorio/dominio.
-
-No persistas estados económicos calculables ni distribuyas automáticamente un abono entre asientos.
+- Mapa, listado, PDF y cuentas derivan del mismo estado de repositorio/dominio.

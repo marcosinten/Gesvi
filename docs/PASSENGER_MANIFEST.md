@@ -6,7 +6,7 @@ El listado de pasajeros conserva la representación tradicional que el encargado
 
 ## Numeración
 
-El usuario debe poder recorrer todos los números configurados para el viaje:
+El usuario debe poder recorrer todos los números configurados para el Tour:
 
 ```text
 01
@@ -54,7 +54,7 @@ El nombre mostrado es el responsable de la reserva. No se debe inventar ni exigi
 
 ## Dinero Y Estado
 
-- El total se obtiene sumando los precios de las asignaciones `BookingSeat`.
+- El total se obtiene usando el precio vigente en el Tour para el tipo de cada `BookingSeat`.
 - El abonado se obtiene sumando los `PaymentRecord` del `Booking`.
 - El pendiente y el estado se derivan de esa misma reserva.
 - Todos los asientos agrupados comparten el estado económico.
@@ -67,16 +67,16 @@ BookingRepository / Domain state
                  |
                  +-- Seat Map
                  +-- Passenger List
-                 +-- Printable Manifest
+                 +-- Passenger PDF
 ```
 
-Mapa, listado e impresión deben reaccionar a la misma información. Está prohibido persistir una copia propia del listado o preparar datos de impresión que se conviertan en otra fuente autoritativa.
+Mapa, listado y PDF deben reaccionar a la misma información. Está prohibido persistir una copia propia del listado o preparar datos del PDF que se conviertan en otra fuente autoritativa.
 
-Una proyección de UI o un modelo de impresión puede adaptar el formato, pero debe generarse desde el estado actual del repositorio/dominio y ser descartable.
+Una proyección de UI o un modelo de PDF puede adaptar el formato, pero debe generarse desde el estado actual del repositorio/dominio y ser descartable.
 
-## Versión Imprimible
+## Versión En PDF
 
-La impresión debe conservar una apariencia cercana al formato físico tradicional y mostrar, como mínimo:
+El listado de pasajeros debe poder generarse en PDF. El documento conserva una apariencia cercana al formato físico tradicional y muestra, como mínimo:
 
 - número de asiento;
 - responsable;
@@ -85,4 +85,4 @@ La impresión debe conservar una apariencia cercana al formato físico tradicion
 - estado;
 - agrupación por reserva.
 
-El orden de los asientos debe ser determinista y comprensible. El medio concreto de impresión, el tamaño de papel y el formato técnico todavía requieren confirmación humana. Este documento no autoriza implementar una base de datos, caché o flujo de negocio separado para imprimir.
+El orden de los asientos debe ser determinista y comprensible. El PDF se genera desde el estado actual del repositorio/dominio y no autoriza una base de datos, caché o flujo de negocio separado.
