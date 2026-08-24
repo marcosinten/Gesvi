@@ -18,9 +18,9 @@ Gesvi permitirá:
 - configurar los tipos de pasaje permitidos y sus precios;
 - administrar reservas o ventas de uno o varios asientos;
 - registrar el responsable común de una reserva;
-- retirar un asiento individual de una reserva grupal;
+- liberar cualquier asiento de una reserva sin eliminar su historial;
 - registrar uno o varios abonos;
-- consultar lo abonado y el saldo pendiente;
+- consultar lo abonado, el saldo pendiente y el saldo a favor;
 - cambiar una asignación a otro asiento disponible;
 - visualizar un mapa de asientos;
 - visualizar el listado numerado de pasajeros;
@@ -34,6 +34,7 @@ Un Tour no tiene ruta, origen ni destino. Los datos obligatorios y las restricci
 - Gesvi no procesa pagos.
 - Gesvi no ejecuta transacciones bancarias ni confirma que el dinero exista fuera de la aplicación.
 - La aplicación únicamente registra cuánto dinero el encargado declara haber recibido.
+- La aplicación registra saldos a favor, pero no procesa devoluciones de dinero.
 - No se requiere registrar el nombre individual de cada pasajero cuando una persona es responsable de varios asientos.
 - No hay backend, sincronización cloud ni funciones de inteligencia artificial en el alcance actual.
 

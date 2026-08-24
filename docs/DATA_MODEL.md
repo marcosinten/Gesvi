@@ -54,10 +54,12 @@ Es el agregado que representa una reserva o venta. Contiene:
 - identificador;
 - Tour al que pertenece;
 - nombre del responsable;
-- una o más asignaciones `BookingSeat`;
+- asignaciones activas `BookingSeat`;
 - cero o más `PaymentRecord`.
 
-No requiere nombres individuales por pasajero. Totales, abonos, saldo y estado económico son valores derivados del agregado.
+Se crea con una o más asignaciones, pero puede quedar sin asientos activos después de liberarlos. Si tiene historial, el `Booking` se conserva sin asientos activos o con una representación equivalente a cancelado/cerrado. No requiere nombres individuales por pasajero.
+
+Total, recibido, saldo pendiente, saldo a favor y estado económico son valores derivados del agregado.
 
 ### BookingSeat
 
@@ -69,9 +71,9 @@ Representa la asignación de un asiento a una reserva. Contiene conceptualmente:
 
 El modelo y la persistencia deben garantizar que un mismo número de asiento no esté asignado a dos reservas dentro del mismo Tour. Crear una reserva y sus asignaciones debe ser una operación atómica.
 
-El precio de un `BookingSeat` se deriva del precio vigente de su `FareType` en el Tour. No es una tarifa histórica fijada por la reserva. Cambiar el precio actualiza automáticamente los totales, saldos, estados económicos y cuentas relacionados, sin modificar los `PaymentRecord`.
+El precio de un `BookingSeat` se deriva del precio vigente de su `FareType` en el Tour. No es una tarifa histórica fijada por la reserva. Cambiar el precio actualiza automáticamente los valores derivados sin modificar los `PaymentRecord`.
 
-Puede eliminarse un `BookingSeat` y liberar su asiento sin modificar los abonos, siempre que el `Booking` conserve al menos otro asiento. No se permite dejar un `Booking` sin asientos.
+Puede eliminarse cualquier `BookingSeat`, incluido el último activo. Su asiento vuelve a `EMPTY`; el `Booking` y sus abonos históricos permanecen.
 
 ### PaymentRecord
 
@@ -81,6 +83,8 @@ Representa un abono declarado por el encargado. Contiene conceptualmente:
 - referencia al `Booking`;
 - importe;
 - momento de registro necesario para conservar el historial.
+
+Los `PaymentRecord` no se reescriben automáticamente cuando cambian tarifas, tipos de pasaje o asientos.
 
 La relación obligatoria es:
 
@@ -120,25 +124,24 @@ Cardinalidades e invariantes:
 
 - Un `Tour` tiene la configuración de sus asientos y tarifas.
 - Un `Booking` pertenece a un solo `Tour`.
-- Un `Booking` tiene de `1..N` `BookingSeat`.
+- Un `Booking` se crea con `1..N` `BookingSeat` activos y puede quedar con `0..N` después de liberaciones.
 - Un `BookingSeat` pertenece a un solo `Booking`.
 - Un asiento puede pertenecer como máximo a un `Booking` dentro del mismo Tour.
-- El último `BookingSeat` de un `Booking` no puede eliminarse.
 - Un `PaymentRecord` pertenece a un solo `Booking`.
 - Un `Booking` puede tener de `0..N` `PaymentRecord`.
 
 ## Valores Derivados
 
 ```text
-bookingTotal = sum(precio vigente de BookingSeat.fareType en el Tour)
-paidTotal    = sum(PaymentRecord.amount)
-balance      = bookingTotal - paidTotal
-pending      = balance cuando balance es positivo; de lo contrario no hay pendiente
+bookingTotal   = sum(precio vigente de cada BookingSeat activo)
+totalRecibido  = sum(PaymentRecord.amount)
+saldoPendiente = max(bookingTotal - totalRecibido, 0)
+saldoFavor     = max(totalRecibido - bookingTotal, 0)
 ```
 
-El estado económico también considera si existe algún `PaymentRecord`: sin registros es `RESERVED`; con registros es `PARTIAL` mientras exista pendiente y `PAID` cuando deje de existir. Se deriva para el `Booking` y se proyecta igual sobre todos sus asientos. La selección visual de una celda es estado transitorio de Presentation y no forma parte de este modelo.
+El estado económico también considera si existe algún `PaymentRecord`: sin registros es `RESERVED`; con registros es `PARTIAL` mientras exista saldo pendiente y `PAID` cuando deje de existir, incluso si hay saldo a favor. Se deriva para el `Booking` y se proyecta igual sobre todos sus asientos activos.
 
-La validez de importes cero o negativos y el tratamiento del excedente de un sobrepago requieren confirmación humana antes de implementar validaciones o cálculos adicionales.
+La validez de importes cero o negativos y la forma de registrar una futura devolución requieren confirmación humana. Gesvi conserva el saldo a favor, pero no procesa la devolución.
 
 ## Fuente Única De Verdad
 

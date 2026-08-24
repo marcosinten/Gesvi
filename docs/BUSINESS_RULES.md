@@ -64,16 +64,11 @@ El precio total de la reserva es la suma de los precios vigentes de los tipos el
 
 Cuando cambia el precio de un tipo de pasaje, todos los `BookingSeat` de ese Tour que usan el tipo adoptan automáticamente el nuevo valor. El precio anterior no queda fijado en la reserva.
 
-Los `PaymentRecord` ya registrados no cambian. Se recalculan automáticamente:
-
-- total del `Booking`;
-- saldo pendiente;
-- estado económico;
-- cuentas del Tour.
+Los `PaymentRecord` ya registrados no cambian. Se aplica el recálculo económico definido en este documento, incluidas las cuentas del Tour.
 
 ## Reserva O Venta
 
-El agregado de dominio `Booking` representa una reserva o venta y contiene de `1..N` asientos. Todos comparten un responsable.
+El agregado de dominio `Booking` representa una reserva o venta. Se crea con `1..N` asientos bajo un responsable común, pero puede quedar sin asientos activos después de liberarlos.
 
 ```text
 Reserva #24
@@ -129,12 +124,34 @@ El historial de registros debe conservarse. Gesvi registra el importe que el enc
 Valores derivados:
 
 ```text
-Total de la reserva = suma del precio vigente de cada BookingSeat.fareType
-Total abonado       = suma de PaymentRecord.amount del Booking
-Saldo pendiente     = diferencia positiva entre total y total abonado
+totalBooking   = suma del precio vigente de cada BookingSeat activo
+totalRecibido  = suma de PaymentRecord.amount del Booking
+saldoPendiente = max(totalBooking - totalRecibido, 0)
+saldoFavor     = max(totalRecibido - totalBooking, 0)
 ```
 
-Si lo abonado iguala o supera el total, ya no existe saldo pendiente. La política para el excedente de un sobrepago, devoluciones, correcciones y reversos todavía requiere confirmación. Hasta definirla, no se debe inventar una distribución por asiento ni eliminar historial.
+Ejemplo después de liberar un asiento:
+
+```text
+Total anterior:   $80
+Abonado:          $70
+Nuevo total:      $60
+Saldo pendiente:   $0
+Saldo a favor:    $10
+```
+
+Si existe saldo a favor, el `Booking` permanece `PAID` y verde porque no existe saldo pendiente. Gesvi registra ese valor, pero no procesa devoluciones. La forma de registrar una devolución futura queda pendiente de definición.
+
+## Recálculo Económico
+
+Se recalcula automáticamente cuando cambia:
+
+- una tarifa;
+- el tipo de pasaje de un `BookingSeat`;
+- la cantidad de asientos activos del `Booking`;
+- o se libera un asiento.
+
+El recálculo actualiza total del `Booking`, total recibido, saldo pendiente, saldo a favor, estado económico y cuentas relacionadas. Nunca modifica automáticamente los `PaymentRecord` registrados.
 
 ## Estados De Asiento
 
@@ -161,7 +178,7 @@ Derivación:
 - `EMPTY`: el asiento no pertenece a ninguna reserva.
 - `RESERVED`: pertenece a una reserva y no existe ningún `PaymentRecord` registrado.
 - `PARTIAL`: existe al menos un `PaymentRecord` y el total abonado es menor que el total de la reserva.
-- `PAID`: existe al menos un `PaymentRecord` y el total abonado iguala o supera el total de la reserva.
+- `PAID`: existe al menos un `PaymentRecord` y no queda saldo pendiente, incluido el caso con saldo a favor.
 
 Estas reglas presuponen importes y precios válidos. Aún debe confirmarse si se aceptan valores cero o negativos; no se debe implementar su tratamiento por suposición.
 
@@ -169,28 +186,22 @@ El estado se calcula automáticamente. Cuando una reserva contiene varios asient
 
 La selección temporal de una celda u otras condiciones de interacción son estado de presentación, no estados económicos adicionales.
 
-## Eliminar Un Asiento De Un Booking
+## Liberar Un Asiento De Un Booking
 
-Un `BookingSeat` puede eliminarse individualmente, incluso dentro de una reserva grupal, siempre que el `Booking` conserve al menos otro asiento. No se permite eliminar su último asiento.
+Eliminar un asiento de una reserva significa liberar su `BookingSeat`. Puede liberarse cualquier asiento, incluido el último asiento activo.
 
-Al eliminarlo:
+Al liberarlo:
 
 - se elimina únicamente esa asignación;
 - el asiento vuelve a `EMPTY`;
 - los demás asientos permanecen en el `Booking`;
 - los `PaymentRecord` permanecen sin cambios;
 - el total se recalcula con los asientos restantes y sus tarifas vigentes;
-- el saldo y el estado económico se recalculan automáticamente.
+- total recibido, saldo pendiente, saldo a favor y estado económico se recalculan automáticamente.
 
 Los abonos existentes no se distribuyen ni se modifican artificialmente.
 
-## Cancelación
-
-La cancelación se refiere a liberar el `Booking` completo y es distinta de eliminar un `BookingSeat` individual.
-
-Una reserva `RESERVED`, sin abonos, puede liberar sus asientos.
-
-Si existe dinero registrado y el estado es `PARTIAL` o `PAID`, no se permite la cancelación simple. El caso debe tratarse posteriormente mediante una operación específica que preserve el historial y evite pérdida de información. Esa operación todavía no está definida.
+Si se libera el último asiento activo, el `Booking` no se elimina físicamente cuando tiene historial. Se conserva sin asientos activos o con una representación equivalente a cancelado/cerrado, junto con sus `PaymentRecord` y cualquier saldo a favor. Liberar asientos no significa eliminar todo el `Booking`.
 
 ## Cambio De Asiento
 
@@ -237,7 +248,5 @@ Requieren confirmación humana antes de implementarse:
 - ciclo de vida formal y diferencia, si existe, entre reserva y venta;
 - moneda, precisión, redondeo y formato monetario;
 - validez de precios y abonos con importe cero o negativo;
-- tratamiento de sobrepagos;
-- operación de devolución, corrección o reverso de abonos;
-- operación de cancelación cuando existe dinero;
+- forma de registrar una futura devolución de saldo a favor;
 - fórmulas adicionales de utilidad o cierre de cuentas.

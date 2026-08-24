@@ -16,12 +16,13 @@ Nunca inventes reglas. No rompas estas invariantes:
 - Un Tour no tiene ruta, origen ni destino. Sus precios nunca se hardcodean.
 - Reducir asientos solo es válido si todos los que desaparecerían están `EMPTY`.
 - `Ida y vuelta` siempre existe; `Solo ida` y `Solo venida` son opcionales y no hay tipos personalizados.
-- Cambiar una tarifa actualiza los totales, saldos, estados y cuentas relacionados, pero no los `PaymentRecord`.
+- Cambiar tarifas, tipos de pasaje o asientos recalcula total, recibido, saldo pendiente, saldo a favor y estado.
 - `PaymentRecord belongs to Booking`, nunca a `Seat` ni a `BookingSeat`.
-- Un `Booking` conserva `1..N` asientos; no se puede eliminar su último `BookingSeat`.
-- Quitar un asiento conserva los abonos y recalcula el Booking sin distribuirlos.
+- Los `PaymentRecord` históricos nunca se reescriben al recalcular un `Booking`.
+- Un `Booking` puede terminar sin asientos activos y conservarse como historial.
+- Liberar un asiento lo devuelve a `EMPTY`, conserva los abonos y recalcula el `Booking` sin distribuirlos.
 - El cambio de asiento solo tiene como destino un asiento `EMPTY`.
 - Los estados se calculan automáticamente para el Booking completo.
 - El flete pertenece al Tour, se usa en cuentas y no aparece en la pantalla operativa de asientos.
-- Gesvi registra dinero declarado; no procesa pagos ni transacciones bancarias.
+- Gesvi registra dinero y saldos a favor declarados; no procesa pagos, transacciones ni devoluciones.
 - Mapa, listado, PDF y cuentas derivan del mismo estado de repositorio/dominio.
