@@ -1,0 +1,21 @@
+# Android
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Room schema (optional — keep for migration history)
+# app/schemas/
+
+# Gradle wrapper jar (generado por Android Studio al sincronizar)
+gradle/wrapper/gradle-wrapper.jar
+
+# Keystore — NUNCA commitear al repositorio
+*.jks
+*.keystore
