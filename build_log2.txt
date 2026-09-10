@@ -1,0 +1,26 @@
+Initialized native services in: C:\Users\Usuario\.gradle\native
+Initialized jansi services in: C:\Users\Usuario\.gradle\native
+Received JVM installation metadata from 'C:\Program Files (x86)\Java\jre-1.8': {JAVA_HOME=C:\Program Files (x86)\Java\jre-1.8, JAVA_VERSION=1.8.0_371, JAVA_VENDOR=Oracle Corporation, RUNTIME_NAME=Java(TM) SE Runtime Environment, RUNTIME_VERSION=1.8.0_371-b11, VM_NAME=Java HotSpot(TM) Client VM, VM_VERSION=25.371-b11, VM_VENDOR=Oracle Corporation, OS_ARCH=x86}
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Starting process 'Gradle build daemon'. Working directory: C:\Users\Usuario\.gradle\daemon\8.9 Command: C:\Program Files (x86)\Java\jre-1.8\bin\java.exe -Xmx2048m -Dfile.encoding=UTF-8 -Duser.country=ES -Duser.language=es -Duser.variant -cp C:\Users\Usuario\.gradle\wrapper\dists\gradle-8.9-bin\90cnw93cvbtalezasaz0blq0a\gradle-8.9\lib\gradle-daemon-main-8.9.jar -javaagent:C:\Users\Usuario\.gradle\wrapper\dists\gradle-8.9-bin\90cnw93cvbtalezasaz0blq0a\gradle-8.9\lib\agents\gradle-instrumentation-agent-8.9.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 8.9
+Successfully started process 'Gradle build daemon'
+An attempt to start the daemon took 0.096 secs.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Unable to start the daemon process.
+This problem might be caused by incorrect configuration of the daemon.
+For example, an unrecognized jvm option is used.For more details on the daemon, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html in the Gradle documentation.
+Process command line: C:\Program Files (x86)\Java\jre-1.8\bin\java.exe -Xmx2048m -Dfile.encoding=UTF-8 -Duser.country=ES -Duser.language=es -Duser.variant -cp C:\Users\Usuario\.gradle\wrapper\dists\gradle-8.9-bin\90cnw93cvbtalezasaz0blq0a\gradle-8.9\lib\gradle-daemon-main-8.9.jar -javaagent:C:\Users\Usuario\.gradle\wrapper\dists\gradle-8.9-bin\90cnw93cvbtalezasaz0blq0a\gradle-8.9\lib\agents\gradle-instrumentation-agent-8.9.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 8.9
+Please read the following process output to find out more:
+-----------------------
+Error occurred during initialization of VM
+Could not reserve enough space for 2097152KB object heap
+
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.

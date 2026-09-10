@@ -42,8 +42,16 @@
     <string name="payment_history_empty">No hay pagos registrados.</string>
     <string name="payment_history_item">Pago %1$d</string>
     <string name="generate_pdf_action">Generar PDF</string>
+    <string name="print_tickets_action">Imprimir boletos</string>
+    <string name="share_tickets_title">Compartir boletos</string>
+    <string name="ticket_departure_date_label">Fecha de salida</string>
     <string name="open_pdf_action">Abrir PDF</string>
     <string name="generate_pdf_error">No se pudo generar el PDF. Inténtalo nuevamente.</string>
+    <string name="generating_pdf_action">Generando…</string>
+    <string name="report_abono_label">Abono</string>
+    <string name="report_generated_label">Generado</string>
+    <string name="report_pdf_share_error">No se pudo compartir el PDF. Inténtalo nuevamente.</string>
+    <string name="share_trip_report_title">Compartir informe de viaje</string>
     <string name="home_title">Inicio</string>
     <string name="history_title">Historial</string>
     <string name="history_subtitle">Todos los tours registrados por estado.</string>

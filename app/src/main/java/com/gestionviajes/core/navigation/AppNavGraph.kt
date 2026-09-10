@@ -74,6 +74,7 @@ fun AppNavGraph() {
 
         composable<AppDestination.TripReport> {
             TripReportScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToHome = {
                     navController.navigateToTopLevelDestination(AppDestination.TripList)
                 },
@@ -85,6 +86,7 @@ fun AppNavGraph() {
 
         composable<AppDestination.TourReport> {
             TourReportScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToHome = {
                     navController.navigateToTopLevelDestination(AppDestination.TripList)
                 },
@@ -96,6 +98,7 @@ fun AppNavGraph() {
 
         composable<AppDestination.Refunds> {
             RefundsScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToHome = {
                     navController.navigateToTopLevelDestination(AppDestination.TripList)
                 },
